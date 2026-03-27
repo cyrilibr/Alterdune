@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <cctype>
+#include <cstdlib>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -224,6 +226,48 @@ static bool parseInt(const std::string& text, int& outValue) {
     }
 }
 
+struct UiTheme {
+    static constexpr const char* reset = "\033[0m";
+    static constexpr const char* accent = "\033[38;5;45m";
+    static constexpr const char* soft = "\033[38;5;111m";
+    static constexpr const char* warn = "\033[38;5;214m";
+    static constexpr const char* danger = "\033[38;5;203m";
+    static constexpr const char* success = "\033[38;5;120m";
+    static constexpr const char* title = "\033[1;38;5;51m";
+
+    static bool colorsEnabled() {
+        const char* term = std::getenv("TERM");
+        return term && std::string(term) != "dumb";
+    }
+
+    static std::string paint(const std::string& text, const char* color) {
+        if (!colorsEnabled()) return text;
+        return std::string(color) + text + reset;
+    }
+
+    static std::string divider(char fill = '=') {
+        return std::string(64, fill);
+    }
+
+    static void header(const std::string& text) {
+        std::cout << "\n" << paint(divider('='), accent) << "\n";
+        std::cout << paint("  " + text, title) << "\n";
+        std::cout << paint(divider('='), accent) << "\n";
+    }
+
+    static std::string gauge(int current, int total, int width = 22) {
+        if (total <= 0) total = 1;
+        current = std::max(0, std::min(current, total));
+        int filled = static_cast<int>((static_cast<double>(current) / static_cast<double>(total)) * width);
+        std::string bar = "[";
+        for (int i = 0; i < width; ++i) {
+            bar += (i < filled ? '#' : '.');
+        }
+        bar += "]";
+        return bar;
+    }
+};
+
 class Game {
 private:
     Player player;
@@ -255,18 +299,20 @@ public:
     }
 
     void printStartSummary() const {
-        std::cout << "\n===== RESUME DE LA PARTIE =====\n";
-        std::cout << "Joueur: " << player.getName() << "\n";
-        std::cout << "HP: " << player.getHp() << "/" << player.getMaxHp() << "\n";
-        std::cout << "Inventaire initial:\n";
+        UiTheme::header("RESUME DE LA PARTIE");
+        std::cout << " Joueur   : " << UiTheme::paint(player.getName(), UiTheme::soft) << "\n";
+        std::cout << " HP       : " << player.getHp() << "/" << player.getMaxHp() << " "
+                  << UiTheme::gauge(player.getHp(), player.getMaxHp()) << "\n";
+        std::cout << " Inventaire initial:\n";
         const auto& inv = player.getInventory();
         if (inv.empty()) {
-            std::cout << "  (aucun item)\n";
+            std::cout << "  - " << UiTheme::paint("(aucun item)", UiTheme::warn) << "\n";
         }
         for (const auto& item : inv) {
-            std::cout << "  - " << item.name << " x" << item.quantity << " (soigne " << item.value << " HP)\n";
+            std::cout << "  - " << UiTheme::paint(item.name, UiTheme::soft) << " x" << item.quantity
+                      << " (soigne " << item.value << " HP)\n";
         }
-        std::cout << "===============================\n";
+        std::cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
     }
 
     void run() {
@@ -277,13 +323,13 @@ public:
                 break;
             }
 
-            std::cout << "\n===== MENU PRINCIPAL =====\n";
-            std::cout << "1. Bestiaire\n";
-            std::cout << "2. Demarrer un combat\n";
-            std::cout << "3. Statistiques du personnage\n";
-            std::cout << "4. Items\n";
-            std::cout << "5. Quitter\n";
-            std::cout << "Votre choix: ";
+            UiTheme::header("MENU PRINCIPAL ALTERDUNE");
+            std::cout << "  1) Bestiaire\n";
+            std::cout << "  2) Demarrer un combat\n";
+            std::cout << "  3) Statistiques du personnage\n";
+            std::cout << "  4) Items\n";
+            std::cout << "  5) Quitter\n";
+            std::cout << UiTheme::paint(" Votre choix > ", UiTheme::accent);
 
             int choice = readChoice(1, 5);
 
@@ -312,7 +358,7 @@ public:
             }
         }
 
-        std::cout << "\nMerci d'avoir joue a ALTERDUNE.\n";
+        std::cout << "\n" << UiTheme::paint("Merci d'avoir joue a ALTERDUNE.", UiTheme::title) << "\n";
     }
 
 private:
@@ -486,18 +532,21 @@ private:
     }
 
     void showBeastiary() const {
-        std::cout << "\n===== BESTIAIRE =====\n";
+        UiTheme::header("BESTIAIRE");
         if (beastiary.empty()) {
-            std::cout << "Aucun monstre vaincu pour le moment.\n";
+            std::cout << UiTheme::paint("Aucun monstre vaincu pour le moment.", UiTheme::warn) << "\n";
         } else {
             for (std::size_t i = 0; i < beastiary.size(); ++i) {
                 const auto& entry = beastiary[i];
-                std::cout << i + 1 << ". " << entry.name << " [" << categoryToString(entry.category) << "]\n";
+                std::cout << i + 1 << ". " << UiTheme::paint(entry.name, UiTheme::soft)
+                          << " [" << categoryToString(entry.category) << "]\n";
                 std::cout << "   HP max: " << entry.maxHp << " | ATK: " << entry.attack << " | DEF: " << entry.defense << "\n";
-                std::cout << "   Resultat: " << (entry.spared ? "Epargne" : "Tue") << "\n";
+                std::cout << "   Resultat: " << UiTheme::paint(entry.spared ? "Epargne" : "Tue",
+                                                               entry.spared ? UiTheme::success : UiTheme::danger)
+                          << "\n";
             }
         }
-        std::cout << "=====================\n";
+        std::cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
     }
 
     static std::string categoryToString(MonsterCategory category) {
@@ -515,23 +564,23 @@ private:
 
     void showInventoryMenu(bool outsideCombat) {
         while (true) {
-            std::cout << "\n===== INVENTAIRE =====\n";
+            UiTheme::header("INVENTAIRE");
             const auto& inv = player.getInventory();
             if (inv.empty()) {
                 std::cout << "Aucun item disponible.\n";
-                std::cout << "======================\n";
+                std::cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
                 return;
             }
 
             bool hasItem = false;
             for (std::size_t i = 0; i < inv.size(); ++i) {
                 const auto& item = inv[i];
-                std::cout << i + 1 << ". " << item.name << " x" << item.quantity
+                std::cout << i + 1 << ". " << UiTheme::paint(item.name, UiTheme::soft) << " x" << item.quantity
                           << " - soigne " << item.value << " HP\n";
                 if (item.quantity > 0) hasItem = true;
             }
             std::cout << "0. Retour\n";
-            std::cout << "Choisissez un item a utiliser: ";
+            std::cout << UiTheme::paint("Choisissez un item a utiliser: ", UiTheme::accent);
 
             int choice = readChoice(0, static_cast<int>(inv.size()));
             if (choice == 0) {
@@ -543,7 +592,7 @@ private:
             auto& selected = editableInv[index];
 
             if (selected.quantity <= 0) {
-                std::cout << "Cet item est en rupture.\n";
+                std::cout << UiTheme::paint("Cet item est en rupture.", UiTheme::warn) << "\n";
                 if (!outsideCombat) return;
                 continue;
             }
@@ -553,7 +602,8 @@ private:
             int healed = player.getHp() - hpBefore;
             --selected.quantity;
 
-            std::cout << "Vous utilisez " << selected.name << " et recuperez " << healed << " HP.\n";
+            std::cout << UiTheme::paint("Vous utilisez " + selected.name + ".", UiTheme::success)
+                      << " Recuperation: " << healed << " HP.\n";
             std::cout << "HP actuel: " << player.getHp() << "/" << player.getMaxHp() << "\n";
 
             if (!outsideCombat || !hasItem) {
@@ -571,8 +621,9 @@ private:
         Monster& templateMonster = randomMonster();
         std::unique_ptr<Monster> monster = templateMonster.clone();
 
-        std::cout << "\n===== DEBUT DU COMBAT =====\n";
-        std::cout << "Un " << monster->categoryName() << " apparait: " << monster->getName() << " !\n";
+        UiTheme::header("DEBUT DU COMBAT");
+        std::cout << "Un " << UiTheme::paint(monster->categoryName(), UiTheme::warn)
+                  << " apparait: " << UiTheme::paint(monster->getName(), UiTheme::soft) << " !\n";
 
         CombatResult result = runCombat(*monster);
 
@@ -580,10 +631,10 @@ private:
             beastiary.push_back(result.entry);
             if (result.monsterSpared) {
                 player.addSpared();
-                std::cout << "Victoire pacifique ! " << monster->getName() << " est epargne.\n";
+                std::cout << UiTheme::paint("Victoire pacifique ! ", UiTheme::success) << monster->getName() << " est epargne.\n";
             } else {
                 player.addKill();
-                std::cout << "Victoire ! " << monster->getName() << " est vaincu.\n";
+                std::cout << UiTheme::paint("Victoire ! ", UiTheme::success) << monster->getName() << " est vaincu.\n";
             }
             std::cout << "Victoires: " << player.getVictories() << "/10\n";
         }
@@ -599,12 +650,14 @@ private:
         result.entry.defense = monster.getDefense();
 
         while (player.isAlive() && monster.isAlive()) {
-            std::cout << "\n--- TOUR DU JOUEUR ---\n";
-            std::cout << player.getName() << " HP: " << player.getHp() << "/" << player.getMaxHp() << "\n";
+            UiTheme::header("TOUR DU JOUEUR");
+            std::cout << player.getName() << " HP: " << player.getHp() << "/" << player.getMaxHp()
+                      << " " << UiTheme::gauge(player.getHp(), player.getMaxHp()) << "\n";
             std::cout << monster.getName() << " HP: " << monster.getHp() << "/" << monster.getMaxHp()
+                      << " " << UiTheme::gauge(monster.getHp(), monster.getMaxHp())
                       << " | Mercy: " << monster.getMercy() << "/" << monster.getMercyGoal() << "\n";
             std::cout << "1. FIGHT\n2. ACT\n3. ITEM\n4. MERCY\n";
-            std::cout << "Choix: ";
+            std::cout << UiTheme::paint("Choix: ", UiTheme::accent);
 
             int choice = readChoice(1, 4);
             CombatAction action = static_cast<CombatAction>(choice);
@@ -612,10 +665,11 @@ private:
             if (action == CombatAction::FIGHT) {
                 int damage = randomDamage(monster.getMaxHp());
                 if (damage == 0) {
-                    std::cout << "Votre attaque rate completement !\n";
+                    std::cout << UiTheme::paint("Votre attaque rate completement !", UiTheme::warn) << "\n";
                 } else {
                     monster.takeDamage(damage);
-                    std::cout << "Vous infligez " << damage << " degats a " << monster.getName() << ".\n";
+                    std::cout << UiTheme::paint("Vous infligez " + std::to_string(damage) + " degats.", UiTheme::danger)
+                              << " Cible: " << monster.getName() << ".\n";
                 }
 
                 if (!monster.isAlive()) {
@@ -635,7 +689,8 @@ private:
                     result.entry.spared = true;
                     break;
                 }
-                std::cout << "Mercy insuffisante ! (" << monster.getMercy() << "/" << monster.getMercyGoal() << ")\n";
+                std::cout << UiTheme::paint("Mercy insuffisante ! ", UiTheme::warn)
+                          << "(" << monster.getMercy() << "/" << monster.getMercyGoal() << ")\n";
             }
 
             if (!monster.isAlive()) {
@@ -645,7 +700,7 @@ private:
                 break;
             }
 
-            std::cout << "\n--- TOUR DU MONSTRE ---\n";
+            UiTheme::header("TOUR DU MONSTRE");
             int damageToPlayer = randomDamage(player.getMaxHp());
             if (damageToPlayer == 0) {
                 std::cout << monster.getName() << " vous manque !\n";
@@ -666,17 +721,17 @@ private:
     void performAct(Monster& monster) {
         const auto& ids = monster.getActIds();
 
-        std::cout << "\nActions ACT disponibles:\n";
+        UiTheme::header("ACTIONS ACT");
         for (std::size_t i = 0; i < ids.size(); ++i) {
             std::cout << i + 1 << ". " << ids[i] << "\n";
         }
-        std::cout << "Choisissez une action: ";
+        std::cout << UiTheme::paint("Choisissez une action: ", UiTheme::accent);
 
         int choice = readChoice(1, static_cast<int>(ids.size()));
         const std::string& chosenId = ids[static_cast<std::size_t>(choice - 1)];
         const ActDefinition& action = actCatalog.at(chosenId);
 
-        std::cout << action.text << "\n";
+        std::cout << UiTheme::paint(action.text, UiTheme::soft) << "\n";
         int before = monster.getMercy();
         monster.adjustMercy(action.mercyImpact);
         int after = monster.getMercy();
@@ -691,8 +746,8 @@ private:
     }
 
     void printEnding() const {
-        std::cout << "\n===== FIN DE PARTIE =====\n";
-        std::cout << "Vous avez atteint 10 victoires !\n";
+        UiTheme::header("FIN DE PARTIE");
+        std::cout << UiTheme::paint("Vous avez atteint 10 victoires !", UiTheme::success) << "\n";
         if (player.getKills() > 0 && player.getSpared() == 0) {
             std::cout << "Fin Genocidaire: vous avez elimine tous les monstres.\n";
         } else if (player.getSpared() > 0 && player.getKills() == 0) {
@@ -704,12 +759,12 @@ private:
         std::cout << "Bilan final -> Tues: " << player.getKills()
                   << ", Epargnes: " << player.getSpared()
                   << ", Victoires: " << player.getVictories() << "\n";
-        std::cout << "=========================\n";
+        std::cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
     }
 };
 
 int main() {
-    std::cout << "Bienvenue dans ALTERDUNE !\n";
+    UiTheme::header("BIENVENUE DANS ALTERDUNE");
     std::cout << "Entrez le nom de votre personnage: ";
 
     std::string playerName;
