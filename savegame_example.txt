@@ -1,0 +1,24 @@
+[PLAYER]
+name=Frisk
+hp=87
+maxHp=120
+kills=2
+spared=3
+victories=5
+totalCombats=6
+totalDamageDealt=188
+totalDamageTaken=121
+totalHealingDone=74
+[INVENTORY]
+Potion;HEAL;25;2
+MegaPotion;HEAL;45;1
+[BESTIARY]
+Slime Pixel;NORMAL;80;10;5;1
+Hexa Wolf;MINIBOSS;150;20;10;0
+[JOURNAL]
+Nouvelle partie creee pour Frisk.
+Debut de combat contre Slime Pixel [NORMAL].
+Action ACT: JOKE (mercy 0->25).
+Action MERCY tentee.
+Monstre epargne: Slime Pixel.
+Victoire obtenue. Total victoires: 1.

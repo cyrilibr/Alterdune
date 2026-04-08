@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <vector>
 
 struct UiTheme {
     static constexpr const char* reset = "\033[0m";
@@ -13,6 +14,7 @@ struct UiTheme {
     static constexpr const char* danger = "\033[38;5;203m";
     static constexpr const char* success = "\033[38;5;120m";
     static constexpr const char* title = "\033[1;38;5;51m";
+    static constexpr const char* muted = "\033[38;5;245m";
 
     static bool colorsEnabled() {
         const char* term = std::getenv("TERM");
@@ -24,7 +26,7 @@ struct UiTheme {
         return std::string(color) + text + reset;
     }
 
-    static std::string divider(char fill = '=') { return std::string(64, fill); }
+    static std::string divider(char fill = '=') { return std::string(72, fill); }
 
     static void header(const std::string& text) {
         std::cout << "\n" << paint(divider('='), accent) << "\n";
@@ -32,7 +34,18 @@ struct UiTheme {
         std::cout << paint(divider('='), accent) << "\n";
     }
 
-    static std::string gauge(int current, int total, int width = 22) {
+    static void printTitleScreen() {
+        std::cout << paint(divider('='), accent) << "\n";
+        std::cout << paint("      ___    _   _____ _____ ____  ____  _   _ _   _ _____ ", title) << "\n";
+        std::cout << paint("     / _ \\  | | |_   _| ____|  _ \\|  _ \\| | | | \\| | ____|", title) << "\n";
+        std::cout << paint("    | | | | | |   | | |  _| | |_) | | | | | | |  \\| |  _|  ", title) << "\n";
+        std::cout << paint("    | |_| | | |___| | | |___|  _ <| |_| | |_| | |\\  | |___ ", title) << "\n";
+        std::cout << paint("     \\___/  |_____|_| |_____|_| \\_\\____/ \\___/|_| \\_|_____|", title) << "\n";
+        std::cout << paint("                Mini-RPG Console Orienté Objet", soft) << "\n";
+        std::cout << paint(divider('='), accent) << "\n";
+    }
+
+    static std::string gauge(int current, int total, int width = 24) {
         if (total <= 0) total = 1;
         current = std::max(0, std::min(current, total));
 
@@ -43,5 +56,22 @@ struct UiTheme {
         }
         bar += "]";
         return bar;
+    }
+
+    static void printBattleMenu() {
+        std::cout << paint(divider('-'), muted) << "\n";
+        std::cout << paint(" [1] FIGHT ", danger)
+                  << paint("[2] ACT ", soft)
+                  << paint("[3] ITEM ", success)
+                  << paint("[4] MERCY", warn) << "\n";
+        std::cout << paint(divider('-'), muted) << "\n";
+    }
+
+    static void printMenuBlock(const std::string& titleText, const std::vector<std::string>& options) {
+        header(titleText);
+        for (const std::string& option : options) {
+            std::cout << "  " << option << "\n";
+        }
+        std::cout << paint(divider('-'), muted) << "\n";
     }
 };
