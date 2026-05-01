@@ -4,12 +4,17 @@
 using namespace std;
 
 class Character {
-protected:
+private:
     string name;
     int hp;
     int maxHp;
     int attack;
     int defense;
+
+protected:
+    void setNameInternal(const string& newName);
+    void setMaxHpInternal(int newMaxHp);
+    void setCurrentHpInternal(int newHp);
 
 public:
     Character(string name, int maxHp, int attack, int defense);
@@ -25,6 +30,4 @@ public:
 
     void heal(int amount);
     void takeDamage(int damage);
-
-    virtual int actCount() const = 0;
 };

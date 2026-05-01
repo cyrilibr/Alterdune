@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+#include <string>
 #include <vector>
 
 #include "Character.h"
@@ -20,12 +22,11 @@ private:
 public:
     Player(string name, int maxHp, int attack, int defense);
 
-    int actCount() const override;
-
-    vector<Item>& getInventory();
     const vector<Item>& getInventory() const;
-
     void setInventory(vector<Item> loadedItems);
+    void addItem(const Item& item);
+    bool useItem(size_t index, int& healedAmount, string& itemName);
+    bool hasUsableItem() const;
 
     int getKills() const;
     int getSpared() const;

@@ -17,30 +17,89 @@ Player::Player(string name, int maxHp, int attack, int defense)
       totalDamageTaken(0),
       totalHealingDone(0) {}
 
-int Player::actCount() const { return 0; }
-
-vector<Item>& Player::getInventory() { return inventory; }
-const vector<Item>& Player::getInventory() const { return inventory; }
-
-void Player::setInventory(vector<Item> loadedItems) { inventory = move(loadedItems); }
-
-int Player::getKills() const { return kills; }
-int Player::getSpared() const { return spared; }
-int Player::getVictories() const { return victories; }
-int Player::getTotalCombats() const { return totalCombats; }
-int Player::getTotalDamageDealt() const { return totalDamageDealt; }
-int Player::getTotalDamageTaken() const { return totalDamageTaken; }
-int Player::getTotalHealingDone() const { return totalHealingDone; }
-
-void Player::setName(const string& newName) { name = newName; }
-
-void Player::setMaxHpAndClamp(int newMaxHp) {
-    if (newMaxHp <= 0) return;
-    maxHp = newMaxHp;
-    hp = min(hp, maxHp);
+const vector<Item>& Player::getInventory() const {
+    return inventory;
 }
 
-void Player::setCurrentHpClamped(int newHp) { hp = max(0, min(newHp, maxHp)); }
+void Player::setInventory(vector<Item> loadedItems) {
+    inventory = move(loadedItems);
+}
+
+void Player::addItem(const Item& item) {
+    inventory.push_back(item);
+}
+
+bool Player::useItem(size_t index, int& healedAmount, string& itemName) {
+    healedAmount = 0;
+    itemName.clear();
+
+    if (index >= inventory.size()) {
+        return false;
+    }
+
+    Item& selected = inventory[index];
+    if (selected.quantity <= 0) {
+        return false;
+    }
+
+    itemName = selected.name;
+    int hpBefore = getHp();
+    heal(selected.value);
+    healedAmount = getHp() - hpBefore;
+
+    --selected.quantity;
+    addHealingDone(healedAmount);
+    return true;
+}
+
+bool Player::hasUsableItem() const {
+    for (const Item& item : inventory) {
+        if (item.quantity > 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int Player::getKills() const {
+    return kills;
+}
+
+int Player::getSpared() const {
+    return spared;
+}
+
+int Player::getVictories() const {
+    return victories;
+}
+
+int Player::getTotalCombats() const {
+    return totalCombats;
+}
+
+int Player::getTotalDamageDealt() const {
+    return totalDamageDealt;
+}
+
+int Player::getTotalDamageTaken() const {
+    return totalDamageTaken;
+}
+
+int Player::getTotalHealingDone() const {
+    return totalHealingDone;
+}
+
+void Player::setName(const string& newName) {
+    setNameInternal(newName);
+}
+
+void Player::setMaxHpAndClamp(int newMaxHp) {
+    setMaxHpInternal(newMaxHp);
+}
+
+void Player::setCurrentHpClamped(int newHp) {
+    setCurrentHpInternal(newHp);
+}
 
 void Player::setProgress(int newKills, int newSpared, int newVictories) {
     kills = max(0, newKills);
@@ -65,35 +124,34 @@ void Player::addSpared() {
     ++victories;
 }
 
-void Player::addCombat() { ++totalCombats; }
+void Player::addCombat() {
+    ++totalCombats;
+}
 
 void Player::addDamageDealt(int value) {
-    if (value > 0) totalDamageDealt += value;
+    if (value > 0) {
+        totalDamageDealt += value;
+    }
 }
 
 void Player::addDamageTaken(int value) {
-    if (value > 0) totalDamageTaken += value;
+    if (value > 0) {
+        totalDamageTaken += value;
+    }
 }
 
 void Player::addHealingDone(int value) {
-    if (value > 0) totalHealingDone += value;
+    if (value > 0) {
+        totalHealingDone += value;
+    }
 }
 
 void Player::printStats() const {
     UiTheme::header("STATISTIQUES DU JOUEUR");
-    cout << "Nom: " << UiTheme::paint(name, UiTheme::soft) << "\n";
-    cout << "HP: " << hp << "/" << maxHp << " " << UiTheme::gauge(hp, maxHp) << "\n";
+    cout << "Nom: " << UiTheme::paint(getName(), UiTheme::soft) << "\n";
+    cout << "HP: " << getHp() << "/" << getMaxHp() << " "
+         << UiTheme::gauge(getHp(), getMaxHp()) << "\n";
     cout << "Monstres tues: " << kills << "\n";
     cout << "Monstres epargnes: " << spared << "\n";
     cout << "Victoires: " << victories << "/10\n";
-    cout << UiTheme::paint(UiTheme::divider('-'), UiTheme::accent) << "\n";
-    cout << "Combats totaux: " << totalCombats << "\n";
-    cout << "Degats infliges: " << totalDamageDealt << "\n";
-    cout << "Degats recus: " << totalDamageTaken << "\n";
-    cout << "Soins utilises: " << totalHealingDone << "\n";
-
-    int totalOutcomes = kills + spared;
-    double spareRate = (totalOutcomes > 0) ? (100.0 * static_cast<double>(spared) / static_cast<double>(totalOutcomes)) : 0.0;
-    cout << "Taux d'epargne: " << static_cast<int>(spareRate + 0.5) << "%\n";
-    cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
 }

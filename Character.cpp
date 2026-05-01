@@ -26,3 +26,15 @@ void Character::takeDamage(int damage) {
     if (damage <= 0) return;
     hp = max(0, hp - damage);
 }
+
+void Character::setNameInternal(const string& newName) { name = newName; }
+
+void Character::setMaxHpInternal(int newMaxHp) {
+    if (newMaxHp <= 0) return;
+    maxHp = newMaxHp;
+    hp = min(hp, maxHp);
+}
+
+void Character::setCurrentHpInternal(int newHp) {
+    hp = max(0, min(newHp, maxHp));
+}
