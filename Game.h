@@ -11,6 +11,7 @@
 #include "Item.h"
 #include "Monster.h"
 #include "Player.h"
+using namespace std;
 
 struct CombatResult {
     bool playerWon = false;
@@ -19,23 +20,23 @@ struct CombatResult {
     BeastiaryEntry entry{};
 };
 
-std::string trim(const std::string& text);
+string trim(const string& text);
 
 class Game {
 private:
     Player player;
-    std::vector<std::unique_ptr<Monster>> monsterPool;
-    std::map<std::string, ActDefinition> actCatalog;
-    std::vector<BeastiaryEntry> beastiary;
-    std::vector<std::string> journal;
-    std::mt19937 rng;
-    std::string savePath;
+    vector<unique_ptr<Monster>> monsterPool;
+    map<string, ActDefinition> actCatalog;
+    vector<BeastiaryEntry> beastiary;
+    vector<string> journal;
+    mt19937 rng;
+    string savePath;
 
 public:
-    explicit Game(const std::string& playerName);
+    explicit Game(const string& playerName);
 
-    bool loadData(const std::string& itemsPath, const std::string& monstersPath);
-    void initializeNewPlayer(const std::string& playerName);
+    bool loadData(const string& itemsPath, const string& monstersPath);
+    void initializeNewPlayer(const string& playerName);
     void printStartSummary() const;
     void run();
 
@@ -47,15 +48,15 @@ public:
 
 private:
     void buildActCatalog();
-    bool loadItems(const std::string& path, std::vector<Item>& outItems) const;
-    bool loadMonsters(const std::string& path, std::vector<std::unique_ptr<Monster>>& outMonsters);
+    bool loadItems(const string& path, vector<Item>& outItems) const;
+    bool loadMonsters(const string& path, vector<unique_ptr<Monster>>& outMonsters);
 
     int randomDamage(int defenderMaxHp);
     void showBeastiary() const;
-    static std::string categoryToString(MonsterCategory category);
-    static bool parseCategory(const std::string& text, MonsterCategory& outCategory);
-    static std::string itemTypeToString(ItemType type);
-    static bool parseItemType(const std::string& text, ItemType& outType);
+    static string categoryToString(MonsterCategory category);
+    static bool parseCategory(const string& text, MonsterCategory& outCategory);
+    static string itemTypeToString(ItemType type);
+    static bool parseItemType(const string& text, ItemType& outType);
     void showInventoryMenu(bool outsideCombat);
     Monster& randomMonster();
     void startCombat();
@@ -63,6 +64,6 @@ private:
     void performAct(Monster& monster);
     void printEnding();
 
-    void addJournal(const std::string& entry);
+    void addJournal(const string& entry);
     void showJournal() const;
 };

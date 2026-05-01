@@ -9,40 +9,41 @@
 #include <utility>
 
 #include "UiTheme.h"
+using namespace std;
 
-std::string trim(const std::string& text) {
-    std::size_t start = 0;
-    while (start < text.size() && std::isspace(static_cast<unsigned char>(text[start]))) {
+string trim(const string& text) {
+    size_t start = 0;
+    while (start < text.size() && isspace(static_cast<unsigned char>(text[start]))) {
         ++start;
     }
-    std::size_t end = text.size();
-    while (end > start && std::isspace(static_cast<unsigned char>(text[end - 1]))) {
+    size_t end = text.size();
+    while (end > start && isspace(static_cast<unsigned char>(text[end - 1]))) {
         --end;
     }
     return text.substr(start, end - start);
 }
 
-static std::vector<std::string> split(const std::string& line, char separator) {
-    std::vector<std::string> out;
-    std::stringstream ss(line);
-    std::string part;
-    while (std::getline(ss, part, separator)) {
+static vector<string> split(const string& line, char separator) {
+    vector<string> out;
+    stringstream ss(line);
+    string part;
+    while (getline(ss, part, separator)) {
         out.push_back(trim(part));
     }
     return out;
 }
 
-static std::string toUpper(std::string v) {
+static string toUpper(string v) {
     for (char& ch : v) {
-        ch = static_cast<char>(std::toupper(static_cast<unsigned char>(ch)));
+        ch = static_cast<char>(toupper(static_cast<unsigned char>(ch)));
     }
     return v;
 }
 
-static bool parseInt(const std::string& text, int& outValue) {
+static bool parseInt(const string& text, int& outValue) {
     try {
-        std::size_t pos = 0;
-        int value = std::stoi(text, &pos);
+        size_t pos = 0;
+        int value = stoi(text, &pos);
         if (pos != text.size()) return false;
         outValue = value;
         return true;
@@ -51,29 +52,29 @@ static bool parseInt(const std::string& text, int& outValue) {
     }
 }
 
-Game::Game(const std::string& playerName)
-    : player(playerName, 120, 12, 8), rng(std::random_device{}()), savePath("savegame.txt") {
+Game::Game(const string& playerName)
+    : player(playerName, 120, 12, 8), rng(random_device{}()), savePath("savegame.txt") {
     buildActCatalog();
 }
 
-bool Game::loadData(const std::string& itemsPath, const std::string& monstersPath) {
-    std::vector<Item> loadedItems;
+bool Game::loadData(const string& itemsPath, const string& monstersPath) {
+    vector<Item> loadedItems;
     if (!loadItems(itemsPath, loadedItems)) {
         return false;
     }
 
-    std::vector<std::unique_ptr<Monster>> loadedMonsters;
+    vector<unique_ptr<Monster>> loadedMonsters;
     if (!loadMonsters(monstersPath, loadedMonsters)) {
         return false;
     }
 
-    player.setInventory(std::move(loadedItems));
-    monsterPool = std::move(loadedMonsters);
+    player.setInventory(move(loadedItems));
+    monsterPool = move(loadedMonsters);
     return true;
 }
 
-void Game::initializeNewPlayer(const std::string& playerName) {
-    std::string safeName = trim(playerName);
+void Game::initializeNewPlayer(const string& playerName) {
+    string safeName = trim(playerName);
     if (safeName.empty()) safeName = "Aventurier";
 
     player.setName(safeName);
@@ -88,19 +89,19 @@ void Game::initializeNewPlayer(const std::string& playerName) {
 
 void Game::printStartSummary() const {
     UiTheme::header("RESUME DE LA PARTIE");
-    std::cout << " Joueur   : " << UiTheme::paint(player.getName(), UiTheme::soft) << "\n";
-    std::cout << " HP       : " << player.getHp() << "/" << player.getMaxHp() << " "
+    cout << " Joueur   : " << UiTheme::paint(player.getName(), UiTheme::soft) << "\n";
+    cout << " HP       : " << player.getHp() << "/" << player.getMaxHp() << " "
               << UiTheme::gauge(player.getHp(), player.getMaxHp()) << "\n";
-    std::cout << " Inventaire initial:\n";
+    cout << " Inventaire initial:\n";
     const auto& inv = player.getInventory();
     if (inv.empty()) {
-        std::cout << "  - " << UiTheme::paint("(aucun item)", UiTheme::warn) << "\n";
+        cout << "  - " << UiTheme::paint("(aucun item)", UiTheme::warn) << "\n";
     }
     for (const auto& item : inv) {
-        std::cout << "  - " << UiTheme::paint(item.name, UiTheme::soft) << " x" << item.quantity
+        cout << "  - " << UiTheme::paint(item.name, UiTheme::soft) << " x" << item.quantity
                   << " (" << itemTypeToString(item.type) << ", valeur " << item.value << ")\n";
     }
-    std::cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
+    cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
 }
 
 void Game::run() {
@@ -122,7 +123,7 @@ void Game::run() {
                                     "7) Charger une sauvegarde",
                                     "8) Quitter",
                                 });
-        std::cout << UiTheme::paint(" Votre choix > ", UiTheme::accent);
+        cout << UiTheme::paint(" Votre choix > ", UiTheme::accent);
 
         int choice = readChoice(1, 8);
 
@@ -133,7 +134,7 @@ void Game::run() {
             case 2:
                 startCombat();
                 if (!player.isAlive()) {
-                    std::cout << "\n" << UiTheme::paint("Vous etes tombe au combat... Partie perdue.", UiTheme::danger) << "\n";
+                    cout << "\n" << UiTheme::paint("Vous etes tombe au combat... Partie perdue.", UiTheme::danger) << "\n";
                     addJournal("Defaite du joueur: points de vie tombes a 0.");
                     quit = true;
                 }
@@ -149,16 +150,16 @@ void Game::run() {
                 break;
             case 6:
                 if (saveGame()) {
-                    std::cout << UiTheme::paint("Sauvegarde reussie.", UiTheme::success) << "\n";
+                    cout << UiTheme::paint("Sauvegarde reussie.", UiTheme::success) << "\n";
                 } else {
-                    std::cout << UiTheme::paint("Echec de la sauvegarde.", UiTheme::danger) << "\n";
+                    cout << UiTheme::paint("Echec de la sauvegarde.", UiTheme::danger) << "\n";
                 }
                 break;
             case 7:
                 if (loadGame()) {
-                    std::cout << UiTheme::paint("Sauvegarde chargee avec succes.", UiTheme::success) << "\n";
+                    cout << UiTheme::paint("Sauvegarde chargee avec succes.", UiTheme::success) << "\n";
                 } else {
-                    std::cout << UiTheme::paint("Impossible de charger la sauvegarde.", UiTheme::warn) << "\n";
+                    cout << UiTheme::paint("Impossible de charger la sauvegarde.", UiTheme::warn) << "\n";
                 }
                 break;
             case 8:
@@ -169,11 +170,11 @@ void Game::run() {
         }
     }
 
-    std::cout << "\n" << UiTheme::paint("Merci d'avoir joue a ALTERDUNE.", UiTheme::title) << "\n";
+    cout << "\n" << UiTheme::paint("Merci d'avoir joue a ALTERDUNE.", UiTheme::title) << "\n";
 }
 
 void Game::buildActCatalog() {
-    const std::vector<ActDefinition> actions = {
+    const vector<ActDefinition> actions = {
         {"JOKE", "Vous racontez une blague absurde sur un clavier qui mange des nuages.", 25},
         {"COMPLIMENT", "Vous complimentez sincerement les pixels du monstre.", 20},
         {"INSULT", "Vous critiquez son style vestimentaire binaire. Mauvaise idee.", -20},
@@ -190,34 +191,34 @@ void Game::buildActCatalog() {
     }
 }
 
-bool Game::loadItems(const std::string& path, std::vector<Item>& outItems) const {
-    std::ifstream file(path);
+bool Game::loadItems(const string& path, vector<Item>& outItems) const {
+    ifstream file(path);
     if (!file) {
-        std::cerr << "Erreur: impossible d'ouvrir le fichier items: " << path << "\n";
+        cerr << "Erreur: impossible d'ouvrir le fichier items: " << path << "\n";
         return false;
     }
 
-    std::string line;
+    string line;
     int lineNumber = 0;
-    while (std::getline(file, line)) {
+    while (getline(file, line)) {
         ++lineNumber;
         line = trim(line);
         if (line.empty()) continue;
 
         auto cols = split(line, ';');
         if (cols.size() != 4) {
-            std::cerr << "Ligne items mal formee (ignoree) ligne " << lineNumber << ": " << line << "\n";
+            cerr << "Ligne items mal formee (ignoree) ligne " << lineNumber << ": " << line << "\n";
             continue;
         }
 
-        const std::string itemName = cols[0];
-        const std::string itemType = toUpper(cols[1]);
+        const string itemName = cols[0];
+        const string itemType = toUpper(cols[1]);
         int value = 0;
         int quantity = 0;
 
         if (itemName.empty() || itemType != "HEAL" || !parseInt(cols[2], value) || !parseInt(cols[3], quantity) ||
             value <= 0 || quantity < 0) {
-            std::cerr << "Ligne items invalide (ignoree) ligne " << lineNumber << ": " << line << "\n";
+            cerr << "Ligne items invalide (ignoree) ligne " << lineNumber << ": " << line << "\n";
             continue;
         }
 
@@ -227,28 +228,28 @@ bool Game::loadItems(const std::string& path, std::vector<Item>& outItems) const
     return true;
 }
 
-bool Game::loadMonsters(const std::string& path, std::vector<std::unique_ptr<Monster>>& outMonsters) {
-    std::ifstream file(path);
+bool Game::loadMonsters(const string& path, vector<unique_ptr<Monster>>& outMonsters) {
+    ifstream file(path);
     if (!file) {
-        std::cerr << "Erreur: impossible d'ouvrir le fichier monsters: " << path << "\n";
+        cerr << "Erreur: impossible d'ouvrir le fichier monsters: " << path << "\n";
         return false;
     }
 
-    std::string line;
+    string line;
     int lineNumber = 0;
-    while (std::getline(file, line)) {
+    while (getline(file, line)) {
         ++lineNumber;
         line = trim(line);
         if (line.empty()) continue;
 
         auto cols = split(line, ';');
         if (cols.size() != 10) {
-            std::cerr << "Ligne monsters mal formee (ignoree) ligne " << lineNumber << ": " << line << "\n";
+            cerr << "Ligne monsters mal formee (ignoree) ligne " << lineNumber << ": " << line << "\n";
             continue;
         }
 
-        std::string categoryText = toUpper(cols[0]);
-        std::string name = cols[1];
+        string categoryText = toUpper(cols[0]);
+        string name = cols[1];
 
         int hp = 0;
         int atk = 0;
@@ -257,55 +258,55 @@ bool Game::loadMonsters(const std::string& path, std::vector<std::unique_ptr<Mon
 
         if (!parseInt(cols[2], hp) || !parseInt(cols[3], atk) || !parseInt(cols[4], def) || !parseInt(cols[5], mercyGoal) ||
             hp <= 0 || atk < 0 || def < 0 || mercyGoal <= 0 || name.empty()) {
-            std::cerr << "Ligne monsters invalide (ignoree) ligne " << lineNumber << ": " << line << "\n";
+            cerr << "Ligne monsters invalide (ignoree) ligne " << lineNumber << ": " << line << "\n";
             continue;
         }
 
-        std::vector<std::string> acts;
-        for (std::size_t i = 6; i < cols.size(); ++i) {
-            std::string actId = toUpper(cols[i]);
+        vector<string> acts;
+        for (size_t i = 6; i < cols.size(); ++i) {
+            string actId = toUpper(cols[i]);
             if (actId == "-" || actId.empty()) {
                 continue;
             }
             if (actCatalog.find(actId) == actCatalog.end()) {
-                std::cerr << "Action ACT inconnue (ignoree) ligne " << lineNumber << ": " << actId << "\n";
+                cerr << "Action ACT inconnue (ignoree) ligne " << lineNumber << ": " << actId << "\n";
                 continue;
             }
             acts.push_back(actId);
         }
 
-        std::unique_ptr<Monster> monster;
+        unique_ptr<Monster> monster;
         if (categoryText == "NORMAL") {
             if (acts.size() < 2) {
-                std::cerr << "Monstre NORMAL invalide (moins de 2 ACT), ligne " << lineNumber << "\n";
+                cerr << "Monstre NORMAL invalide (moins de 2 ACT), ligne " << lineNumber << "\n";
                 continue;
             }
             acts.resize(2);
-            monster = std::make_unique<NormalMonster>(name, hp, atk, def, mercyGoal, acts);
+            monster = make_unique<NormalMonster>(name, hp, atk, def, mercyGoal, acts);
         } else if (categoryText == "MINIBOSS") {
             if (acts.size() < 3) {
-                std::cerr << "Monstre MINIBOSS invalide (moins de 3 ACT), ligne " << lineNumber << "\n";
+                cerr << "Monstre MINIBOSS invalide (moins de 3 ACT), ligne " << lineNumber << "\n";
                 continue;
             }
             acts.resize(3);
-            monster = std::make_unique<MiniBossMonster>(name, hp, atk, def, mercyGoal, acts);
+            monster = make_unique<MiniBossMonster>(name, hp, atk, def, mercyGoal, acts);
         } else if (categoryText == "BOSS") {
             if (acts.size() < 4) {
-                std::cerr << "Monstre BOSS invalide (moins de 4 ACT), ligne " << lineNumber << "\n";
+                cerr << "Monstre BOSS invalide (moins de 4 ACT), ligne " << lineNumber << "\n";
                 continue;
             }
             acts.resize(4);
-            monster = std::make_unique<BossMonster>(name, hp, atk, def, mercyGoal, acts);
+            monster = make_unique<BossMonster>(name, hp, atk, def, mercyGoal, acts);
         } else {
-            std::cerr << "Categorie inconnue (ignoree) ligne " << lineNumber << ": " << cols[0] << "\n";
+            cerr << "Categorie inconnue (ignoree) ligne " << lineNumber << ": " << cols[0] << "\n";
             continue;
         }
 
-        outMonsters.push_back(std::move(monster));
+        outMonsters.push_back(move(monster));
     }
 
     if (outMonsters.empty()) {
-        std::cerr << "Erreur: aucun monstre valide charge.\n";
+        cerr << "Erreur: aucun monstre valide charge.\n";
         return false;
     }
 
@@ -315,19 +316,19 @@ bool Game::loadMonsters(const std::string& path, std::vector<std::unique_ptr<Mon
 int Game::readChoice(int min, int max) {
     while (true) {
         int choice;
-        std::cin >> choice;
+        cin >> choice;
 
-        if (std::cin.fail()) {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "Entree invalide. Reessayez: ";
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Entree invalide. Reessayez: ";
             continue;
         }
 
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         if (choice < min || choice > max) {
-            std::cout << "Choix hors limite. Reessayez: ";
+            cout << "Choix hors limite. Reessayez: ";
             continue;
         }
 
@@ -336,29 +337,29 @@ int Game::readChoice(int min, int max) {
 }
 
 int Game::randomDamage(int defenderMaxHp) {
-    std::uniform_int_distribution<int> dist(0, defenderMaxHp);
+    uniform_int_distribution<int> dist(0, defenderMaxHp);
     return dist(rng);
 }
 
 void Game::showBeastiary() const {
     UiTheme::header("BESTIAIRE");
     if (beastiary.empty()) {
-        std::cout << UiTheme::paint("Aucun monstre vaincu pour le moment.", UiTheme::warn) << "\n";
+        cout << UiTheme::paint("Aucun monstre vaincu pour le moment.", UiTheme::warn) << "\n";
     } else {
-        for (std::size_t i = 0; i < beastiary.size(); ++i) {
+        for (size_t i = 0; i < beastiary.size(); ++i) {
             const auto& entry = beastiary[i];
-            std::cout << i + 1 << ". " << UiTheme::paint(entry.name, UiTheme::soft)
+            cout << i + 1 << ". " << UiTheme::paint(entry.name, UiTheme::soft)
                       << " [" << categoryToString(entry.category) << "]\n";
-            std::cout << "   HP max: " << entry.maxHp << " | ATK: " << entry.attack << " | DEF: " << entry.defense << "\n";
-            std::cout << "   Resultat: " << UiTheme::paint(entry.spared ? "Epargne" : "Tue",
+            cout << "   HP max: " << entry.maxHp << " | ATK: " << entry.attack << " | DEF: " << entry.defense << "\n";
+            cout << "   Resultat: " << UiTheme::paint(entry.spared ? "Epargne" : "Tue",
                                                            entry.spared ? UiTheme::success : UiTheme::danger)
                       << "\n";
         }
     }
-    std::cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
+    cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
 }
 
-std::string Game::categoryToString(MonsterCategory category) {
+string Game::categoryToString(MonsterCategory category) {
     switch (category) {
         case MonsterCategory::NORMAL:
             return "NORMAL";
@@ -371,8 +372,8 @@ std::string Game::categoryToString(MonsterCategory category) {
     }
 }
 
-bool Game::parseCategory(const std::string& text, MonsterCategory& outCategory) {
-    const std::string up = toUpper(text);
+bool Game::parseCategory(const string& text, MonsterCategory& outCategory) {
+    const string up = toUpper(text);
     if (up == "NORMAL") {
         outCategory = MonsterCategory::NORMAL;
         return true;
@@ -388,7 +389,7 @@ bool Game::parseCategory(const std::string& text, MonsterCategory& outCategory) 
     return false;
 }
 
-std::string Game::itemTypeToString(ItemType type) {
+string Game::itemTypeToString(ItemType type) {
     switch (type) {
         case ItemType::HEAL:
             return "HEAL";
@@ -397,7 +398,7 @@ std::string Game::itemTypeToString(ItemType type) {
     }
 }
 
-bool Game::parseItemType(const std::string& text, ItemType& outType) {
+bool Game::parseItemType(const string& text, ItemType& outType) {
     if (toUpper(text) == "HEAL") {
         outType = ItemType::HEAL;
         return true;
@@ -410,32 +411,32 @@ void Game::showInventoryMenu(bool outsideCombat) {
         UiTheme::header("INVENTAIRE");
         const auto& inv = player.getInventory();
         if (inv.empty()) {
-            std::cout << "Aucun item disponible.\n";
-            std::cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
+            cout << "Aucun item disponible.\n";
+            cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
             return;
         }
 
         bool hasItem = false;
-        for (std::size_t i = 0; i < inv.size(); ++i) {
+        for (size_t i = 0; i < inv.size(); ++i) {
             const auto& item = inv[i];
-            std::cout << i + 1 << ". " << UiTheme::paint(item.name, UiTheme::soft) << " x" << item.quantity
+            cout << i + 1 << ". " << UiTheme::paint(item.name, UiTheme::soft) << " x" << item.quantity
                       << " - " << itemTypeToString(item.type) << " " << item.value << "\n";
             if (item.quantity > 0) hasItem = true;
         }
-        std::cout << "0. Retour\n";
-        std::cout << UiTheme::paint("Choisissez un item a utiliser: ", UiTheme::accent);
+        cout << "0. Retour\n";
+        cout << UiTheme::paint("Choisissez un item a utiliser: ", UiTheme::accent);
 
         int choice = readChoice(0, static_cast<int>(inv.size()));
         if (choice == 0) {
             return;
         }
 
-        std::size_t index = static_cast<std::size_t>(choice - 1);
+        size_t index = static_cast<size_t>(choice - 1);
         auto& editableInv = player.getInventory();
         auto& selected = editableInv[index];
 
         if (selected.quantity <= 0) {
-            std::cout << UiTheme::paint("Cet item est en rupture.", UiTheme::warn) << "\n";
+            cout << UiTheme::paint("Cet item est en rupture.", UiTheme::warn) << "\n";
             if (!outsideCombat) return;
             continue;
         }
@@ -446,10 +447,10 @@ void Game::showInventoryMenu(bool outsideCombat) {
         --selected.quantity;
         player.addHealingDone(healed);
 
-        std::cout << UiTheme::paint("+" + std::to_string(healed) + " HP", UiTheme::success)
+        cout << UiTheme::paint("+" + to_string(healed) + " HP", UiTheme::success)
                   << " avec " << selected.name << ".\n";
-        std::cout << "HP actuel: " << player.getHp() << "/" << player.getMaxHp() << "\n";
-        addJournal("Item utilise: " + selected.name + " (soin " + std::to_string(healed) + " HP).");
+        cout << "HP actuel: " << player.getHp() << "/" << player.getMaxHp() << "\n";
+        addJournal("Item utilise: " + selected.name + " (soin " + to_string(healed) + " HP).");
 
         if (!outsideCombat || !hasItem) {
             return;
@@ -458,17 +459,17 @@ void Game::showInventoryMenu(bool outsideCombat) {
 }
 
 Monster& Game::randomMonster() {
-    std::uniform_int_distribution<std::size_t> dist(0, monsterPool.size() - 1);
+    uniform_int_distribution<size_t> dist(0, monsterPool.size() - 1);
     return *monsterPool[dist(rng)];
 }
 
 void Game::startCombat() {
     Monster& templateMonster = randomMonster();
-    std::unique_ptr<Monster> monster = templateMonster.clone();
+    unique_ptr<Monster> monster = templateMonster.clone();
     player.addCombat();
 
     UiTheme::header("DEBUT DU COMBAT");
-    std::cout << "Un " << UiTheme::paint(monster->categoryName(), UiTheme::warn)
+    cout << "Un " << UiTheme::paint(monster->categoryName(), UiTheme::warn)
               << " apparait: " << UiTheme::paint(monster->getName(), UiTheme::soft) << " !\n";
     addJournal("Debut de combat contre " + monster->getName() + " [" + monster->categoryName() + "].");
 
@@ -478,16 +479,16 @@ void Game::startCombat() {
         beastiary.push_back(result.entry);
         if (result.monsterSpared) {
             player.addSpared();
-            std::cout << UiTheme::paint("[MERCY] Victoire pacifique ! ", UiTheme::success) << monster->getName()
+            cout << UiTheme::paint("[MERCY] Victoire pacifique ! ", UiTheme::success) << monster->getName()
                       << " est epargne.\n";
             addJournal("Monstre epargne: " + monster->getName() + ".");
         } else {
             player.addKill();
-            std::cout << UiTheme::paint("[KO] Victoire ! ", UiTheme::success) << monster->getName() << " est vaincu.\n";
+            cout << UiTheme::paint("[KO] Victoire ! ", UiTheme::success) << monster->getName() << " est vaincu.\n";
             addJournal("Monstre vaincu: " + monster->getName() + ".");
         }
-        std::cout << "Victoires: " << player.getVictories() << "/10\n";
-        addJournal("Victoire obtenue. Total victoires: " + std::to_string(player.getVictories()) + ".");
+        cout << "Victoires: " << player.getVictories() << "/10\n";
+        addJournal("Victoire obtenue. Total victoires: " + to_string(player.getVictories()) + ".");
     }
 }
 
@@ -502,13 +503,13 @@ CombatResult Game::runCombat(Monster& monster) {
 
     while (player.isAlive() && monster.isAlive()) {
         UiTheme::header("TOUR DU JOUEUR");
-        std::cout << player.getName() << " HP: " << player.getHp() << "/" << player.getMaxHp()
+        cout << player.getName() << " HP: " << player.getHp() << "/" << player.getMaxHp()
                   << " " << UiTheme::gauge(player.getHp(), player.getMaxHp()) << "\n";
-        std::cout << monster.getName() << " HP: " << monster.getHp() << "/" << monster.getMaxHp()
+        cout << monster.getName() << " HP: " << monster.getHp() << "/" << monster.getMaxHp()
                   << " " << UiTheme::gauge(monster.getHp(), monster.getMaxHp())
                   << " | Mercy: " << monster.getMercy() << "/" << monster.getMercyGoal() << "\n";
         UiTheme::printBattleMenu();
-        std::cout << UiTheme::paint("Choix: ", UiTheme::accent);
+        cout << UiTheme::paint("Choix: ", UiTheme::accent);
 
         int choice = readChoice(1, 4);
         CombatAction action = static_cast<CombatAction>(choice);
@@ -516,14 +517,14 @@ CombatResult Game::runCombat(Monster& monster) {
         if (action == CombatAction::FIGHT) {
             int damage = randomDamage(monster.getMaxHp());
             if (damage == 0) {
-                std::cout << UiTheme::paint("Votre attaque rate completement !", UiTheme::warn) << "\n";
+                cout << UiTheme::paint("Votre attaque rate completement !", UiTheme::warn) << "\n";
                 addJournal("Action FIGHT: ratee.");
             } else {
                 monster.takeDamage(damage);
                 player.addDamageDealt(damage);
-                std::cout << UiTheme::paint("Vous infligez " + std::to_string(damage) + " degats.", UiTheme::danger)
+                cout << UiTheme::paint("Vous infligez " + to_string(damage) + " degats.", UiTheme::danger)
                           << " Cible: " << monster.getName() << ".\n";
-                addJournal("Action FIGHT: " + std::to_string(damage) + " degats infliges a " + monster.getName() + ".");
+                addJournal("Action FIGHT: " + to_string(damage) + " degats infliges a " + monster.getName() + ".");
             }
 
             if (!monster.isAlive()) {
@@ -545,7 +546,7 @@ CombatResult Game::runCombat(Monster& monster) {
                 result.entry.spared = true;
                 break;
             }
-            std::cout << UiTheme::paint("Mercy insuffisante ! ", UiTheme::warn)
+            cout << UiTheme::paint("Mercy insuffisante ! ", UiTheme::warn)
                       << "(" << monster.getMercy() << "/" << monster.getMercyGoal() << ")\n";
         }
 
@@ -559,14 +560,14 @@ CombatResult Game::runCombat(Monster& monster) {
         UiTheme::header("TOUR DU MONSTRE");
         int damageToPlayer = randomDamage(player.getMaxHp());
         if (damageToPlayer == 0) {
-            std::cout << monster.getName() << " vous manque !\n";
+            cout << monster.getName() << " vous manque !\n";
             addJournal("Le monstre " + monster.getName() + " rate son attaque.");
         } else {
             player.takeDamage(damageToPlayer);
             player.addDamageTaken(damageToPlayer);
-            std::cout << UiTheme::paint(monster.getName() + " inflige " + std::to_string(damageToPlayer) + " degats.", UiTheme::danger)
+            cout << UiTheme::paint(monster.getName() + " inflige " + to_string(damageToPlayer) + " degats.", UiTheme::danger)
                       << "\n";
-            addJournal("Degats recus: " + std::to_string(damageToPlayer) + " (" + monster.getName() + ").");
+            addJournal("Degats recus: " + to_string(damageToPlayer) + " (" + monster.getName() + ").");
         }
 
         if (!player.isAlive()) {
@@ -582,73 +583,73 @@ void Game::performAct(Monster& monster) {
     const auto& ids = monster.getActIds();
 
     UiTheme::header("ACTIONS ACT");
-    for (std::size_t i = 0; i < ids.size(); ++i) {
-        std::cout << i + 1 << ". " << ids[i] << "\n";
+    for (size_t i = 0; i < ids.size(); ++i) {
+        cout << i + 1 << ". " << ids[i] << "\n";
     }
-    std::cout << UiTheme::paint("Choisissez une action: ", UiTheme::accent);
+    cout << UiTheme::paint("Choisissez une action: ", UiTheme::accent);
 
     int choice = readChoice(1, static_cast<int>(ids.size()));
-    const std::string& chosenId = ids[static_cast<std::size_t>(choice - 1)];
+    const string& chosenId = ids[static_cast<size_t>(choice - 1)];
     const ActDefinition& action = actCatalog.at(chosenId);
 
-    std::cout << UiTheme::paint(action.text, UiTheme::soft) << "\n";
+    cout << UiTheme::paint(action.text, UiTheme::soft) << "\n";
     int before = monster.getMercy();
     monster.adjustMercy(action.mercyImpact);
     int after = monster.getMercy();
 
     int delta = after - before;
-    std::cout << "Mercy: " << before << " -> " << after;
+    cout << "Mercy: " << before << " -> " << after;
     if (delta > 0) {
-        std::cout << " (+" << delta << ")\n";
+        cout << " (+" << delta << ")\n";
     } else {
-        std::cout << " (" << delta << ")\n";
+        cout << " (" << delta << ")\n";
     }
 
-    addJournal("Action ACT: " + chosenId + " (mercy " + std::to_string(before) + "->" + std::to_string(after) + ").");
+    addJournal("Action ACT: " + chosenId + " (mercy " + to_string(before) + "->" + to_string(after) + ").");
 }
 
 void Game::printEnding() {
     UiTheme::header("FIN DE PARTIE");
-    std::cout << UiTheme::paint("Vous avez atteint 10 victoires !", UiTheme::success) << "\n";
+    cout << UiTheme::paint("Vous avez atteint 10 victoires !", UiTheme::success) << "\n";
     if (player.getKills() > 0 && player.getSpared() == 0) {
-        std::cout << UiTheme::paint("ROUTE GENOCIDAIRE", UiTheme::danger) << "\n";
-        std::cout << "Le silence remplace chaque cri. ALTERDUNE se souvient de votre violence.\n";
+        cout << UiTheme::paint("ROUTE GENOCIDAIRE", UiTheme::danger) << "\n";
+        cout << "Le silence remplace chaque cri. ALTERDUNE se souvient de votre violence.\n";
         addJournal("Fin atteinte: Genocidaire.");
     } else if (player.getSpared() > 0 && player.getKills() == 0) {
-        std::cout << UiTheme::paint("ROUTE PACIFISTE", UiTheme::success) << "\n";
-        std::cout << "Les monstres racontent votre nom comme une promesse de paix.\n";
+        cout << UiTheme::paint("ROUTE PACIFISTE", UiTheme::success) << "\n";
+        cout << "Les monstres racontent votre nom comme une promesse de paix.\n";
         addJournal("Fin atteinte: Pacifiste.");
     } else {
-        std::cout << UiTheme::paint("ROUTE NEUTRE", UiTheme::warn) << "\n";
-        std::cout << "Votre route reste ambigue: survivre, convaincre, parfois detruire.\n";
+        cout << UiTheme::paint("ROUTE NEUTRE", UiTheme::warn) << "\n";
+        cout << "Votre route reste ambigue: survivre, convaincre, parfois detruire.\n";
         addJournal("Fin atteinte: Neutre.");
     }
 
-    std::cout << "Bilan final -> Tues: " << player.getKills() << ", Epargnes: " << player.getSpared()
+    cout << "Bilan final -> Tues: " << player.getKills() << ", Epargnes: " << player.getSpared()
               << ", Victoires: " << player.getVictories() << "\n";
-    std::cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
+    cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
 }
 
-void Game::addJournal(const std::string& entry) {
+void Game::addJournal(const string& entry) {
     journal.push_back(entry);
 }
 
 void Game::showJournal() const {
     UiTheme::header("JOURNAL DE PARTIE");
     if (journal.empty()) {
-        std::cout << UiTheme::paint("Le journal est vide pour le moment.", UiTheme::warn) << "\n";
+        cout << UiTheme::paint("Le journal est vide pour le moment.", UiTheme::warn) << "\n";
     } else {
-        for (std::size_t i = 0; i < journal.size(); ++i) {
-            std::cout << i + 1 << ". " << journal[i] << "\n";
+        for (size_t i = 0; i < journal.size(); ++i) {
+            cout << i + 1 << ". " << journal[i] << "\n";
         }
     }
-    std::cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
+    cout << UiTheme::paint(UiTheme::divider('='), UiTheme::accent) << "\n";
 }
 
 bool Game::saveGame() const {
-    std::ofstream file(savePath);
+    ofstream file(savePath);
     if (!file) {
-        std::cerr << "Erreur: impossible d'ecrire le fichier de sauvegarde.\n";
+        cerr << "Erreur: impossible d'ecrire le fichier de sauvegarde.\n";
         return false;
     }
 
@@ -684,16 +685,16 @@ bool Game::saveGame() const {
 }
 
 bool Game::loadGame() {
-    std::ifstream file(savePath);
+    ifstream file(savePath);
     if (!file) {
-        std::cerr << "Aucune sauvegarde disponible (" << savePath << ").\n";
+        cerr << "Aucune sauvegarde disponible (" << savePath << ").\n";
         return false;
     }
 
-    std::string line;
-    std::string section;
+    string line;
+    string section;
 
-    std::string loadedName = player.getName();
+    string loadedName = player.getName();
     int hp = player.getHp();
     int maxHp = player.getMaxHp();
     int kills = player.getKills();
@@ -704,12 +705,12 @@ bool Game::loadGame() {
     int totalDamageTaken = player.getTotalDamageTaken();
     int totalHealingDone = player.getTotalHealingDone();
 
-    std::vector<Item> loadedInventory;
-    std::vector<BeastiaryEntry> loadedBeastiary;
-    std::vector<std::string> loadedJournal;
+    vector<Item> loadedInventory;
+    vector<BeastiaryEntry> loadedBeastiary;
+    vector<string> loadedJournal;
 
     int lineNumber = 0;
-    while (std::getline(file, line)) {
+    while (getline(file, line)) {
         ++lineNumber;
         line = trim(line);
         if (line.empty()) continue;
@@ -721,12 +722,12 @@ bool Game::loadGame() {
 
         if (section == "[PLAYER]") {
             auto eqPos = line.find('=');
-            if (eqPos == std::string::npos) {
-                std::cerr << "Sauvegarde invalide [PLAYER], ligne " << lineNumber << "\n";
+            if (eqPos == string::npos) {
+                cerr << "Sauvegarde invalide [PLAYER], ligne " << lineNumber << "\n";
                 continue;
             }
-            std::string key = trim(line.substr(0, eqPos));
-            std::string value = trim(line.substr(eqPos + 1));
+            string key = trim(line.substr(0, eqPos));
+            string value = trim(line.substr(eqPos + 1));
 
             int parsed = 0;
             if (key == "name") loadedName = value;
@@ -742,7 +743,7 @@ bool Game::loadGame() {
         } else if (section == "[INVENTORY]") {
             auto cols = split(line, ';');
             if (cols.size() != 4) {
-                std::cerr << "Ligne inventaire ignoree (invalide), ligne " << lineNumber << "\n";
+                cerr << "Ligne inventaire ignoree (invalide), ligne " << lineNumber << "\n";
                 continue;
             }
             ItemType type = ItemType::HEAL;
@@ -750,14 +751,14 @@ bool Game::loadGame() {
             int qty = 0;
             if (cols[0].empty() || !parseItemType(cols[1], type) || !parseInt(cols[2], value) || !parseInt(cols[3], qty) ||
                 value <= 0 || qty < 0) {
-                std::cerr << "Ligne inventaire ignoree (valeurs invalides), ligne " << lineNumber << "\n";
+                cerr << "Ligne inventaire ignoree (valeurs invalides), ligne " << lineNumber << "\n";
                 continue;
             }
             loadedInventory.push_back({cols[0], type, value, qty});
         } else if (section == "[BESTIARY]") {
             auto cols = split(line, ';');
             if (cols.size() != 6) {
-                std::cerr << "Ligne bestiaire ignoree (invalide), ligne " << lineNumber << "\n";
+                cerr << "Ligne bestiaire ignoree (invalide), ligne " << lineNumber << "\n";
                 continue;
             }
 
@@ -769,7 +770,7 @@ bool Game::loadGame() {
             if (cols[0].empty() || !parseCategory(cols[1], category) || !parseInt(cols[2], maxHpEntry) ||
                 !parseInt(cols[3], atk) || !parseInt(cols[4], def) || !parseInt(cols[5], sparedFlag) || maxHpEntry <= 0 ||
                 atk < 0 || def < 0) {
-                std::cerr << "Ligne bestiaire ignoree (valeurs invalides), ligne " << lineNumber << "\n";
+                cerr << "Ligne bestiaire ignoree (valeurs invalides), ligne " << lineNumber << "\n";
                 continue;
             }
             loadedBeastiary.push_back({cols[0], category, maxHpEntry, atk, def, sparedFlag != 0});
@@ -779,7 +780,7 @@ bool Game::loadGame() {
     }
 
     if (maxHp <= 0) {
-        std::cerr << "Sauvegarde invalide: maxHp <= 0\n";
+        cerr << "Sauvegarde invalide: maxHp <= 0\n";
         return false;
     }
 
@@ -790,16 +791,16 @@ bool Game::loadGame() {
     player.setAdvancedStats(totalCombats, totalDamageDealt, totalDamageTaken, totalHealingDone);
 
     if (!loadedInventory.empty()) {
-        player.setInventory(std::move(loadedInventory));
+        player.setInventory(move(loadedInventory));
     }
 
-    beastiary = std::move(loadedBeastiary);
-    journal = std::move(loadedJournal);
+    beastiary = move(loadedBeastiary);
+    journal = move(loadedJournal);
     addJournal("Sauvegarde chargee depuis " + savePath + ".");
     return true;
 }
 
 bool Game::hasSaveFile() const {
-    std::ifstream file(savePath);
+    ifstream file(savePath);
     return static_cast<bool>(file);
 }

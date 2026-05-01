@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+using namespace std;
 
 struct UiTheme {
     static constexpr const char* reset = "\033[0m";
@@ -17,40 +18,40 @@ struct UiTheme {
     static constexpr const char* muted = "\033[38;5;245m";
 
     static bool colorsEnabled() {
-        const char* term = std::getenv("TERM");
-        return term && std::string(term) != "dumb";
+        const char* term = getenv("TERM");
+        return term && string(term) != "dumb";
     }
 
-    static std::string paint(const std::string& text, const char* color) {
+    static string paint(const string& text, const char* color) {
         if (!colorsEnabled()) return text;
-        return std::string(color) + text + reset;
+        return string(color) + text + reset;
     }
 
-    static std::string divider(char fill = '=') { return std::string(72, fill); }
+    static string divider(char fill = '=') { return string(72, fill); }
 
-    static void header(const std::string& text) {
-        std::cout << "\n" << paint(divider('='), accent) << "\n";
-        std::cout << paint("  " + text, title) << "\n";
-        std::cout << paint(divider('='), accent) << "\n";
+    static void header(const string& text) {
+        cout << "\n" << paint(divider('='), accent) << "\n";
+        cout << paint("  " + text, title) << "\n";
+        cout << paint(divider('='), accent) << "\n";
     }
 
     static void printTitleScreen() {
-        std::cout << paint(divider('='), accent) << "\n";
-        std::cout << paint("      ___    _   _____ _____ ____  ____  _   _ _   _ _____ ", title) << "\n";
-        std::cout << paint("     / _ \\  | | |_   _| ____|  _ \\|  _ \\| | | | \\| | ____|", title) << "\n";
-        std::cout << paint("    | | | | | |   | | |  _| | |_) | | | | | | |  \\| |  _|  ", title) << "\n";
-        std::cout << paint("    | |_| | | |___| | | |___|  _ <| |_| | |_| | |\\  | |___ ", title) << "\n";
-        std::cout << paint("     \\___/  |_____|_| |_____|_| \\_\\____/ \\___/|_| \\_|_____|", title) << "\n";
-        std::cout << paint("                Mini-RPG Console Orienté Objet", soft) << "\n";
-        std::cout << paint(divider('='), accent) << "\n";
+        cout << paint(divider('='), accent) << "\n";
+        cout << paint("      ___    _   _____ _____ ____  ____  _   _ _   _ _____ ", title) << "\n";
+        cout << paint("     / _ \\  | | |_   _| ____|  _ \\|  _ \\| | | | \\| | ____|", title) << "\n";
+        cout << paint("    | | | | | |   | | |  _| | |_) | | | | | | |  \\| |  _|  ", title) << "\n";
+        cout << paint("    | |_| | | |___| | | |___|  _ <| |_| | |_| | |\\  | |___ ", title) << "\n";
+        cout << paint("     \\___/  |_____|_| |_____|_| \\_\\____/ \\___/|_| \\_|_____|", title) << "\n";
+        cout << paint("                Mini-RPG Console Orienté Objet", soft) << "\n";
+        cout << paint(divider('='), accent) << "\n";
     }
 
-    static std::string gauge(int current, int total, int width = 24) {
+    static string gauge(int current, int total, int width = 24) {
         if (total <= 0) total = 1;
-        current = std::max(0, std::min(current, total));
+        current = max(0, min(current, total));
 
         int filled = static_cast<int>((static_cast<double>(current) / static_cast<double>(total)) * width);
-        std::string bar = "[";
+        string bar = "[";
         for (int i = 0; i < width; ++i) {
             bar += (i < filled ? '#' : '.');
         }
@@ -59,19 +60,19 @@ struct UiTheme {
     }
 
     static void printBattleMenu() {
-        std::cout << paint(divider('-'), muted) << "\n";
-        std::cout << paint(" [1] FIGHT ", danger)
+        cout << paint(divider('-'), muted) << "\n";
+        cout << paint(" [1] FIGHT ", danger)
                   << paint("[2] ACT ", soft)
                   << paint("[3] ITEM ", success)
                   << paint("[4] MERCY", warn) << "\n";
-        std::cout << paint(divider('-'), muted) << "\n";
+        cout << paint(divider('-'), muted) << "\n";
     }
 
-    static void printMenuBlock(const std::string& titleText, const std::vector<std::string>& options) {
+    static void printMenuBlock(const string& titleText, const vector<string>& options) {
         header(titleText);
-        for (const std::string& option : options) {
-            std::cout << "  " << option << "\n";
+        for (const string& option : options) {
+            cout << "  " << option << "\n";
         }
-        std::cout << paint(divider('-'), muted) << "\n";
+        cout << paint(divider('-'), muted) << "\n";
     }
 };

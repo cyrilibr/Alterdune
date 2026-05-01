@@ -4,10 +4,11 @@
 
 #include "Character.h"
 #include "Item.h"
+using namespace std;
 
 class Player : public Character {
 private:
-    std::vector<Item> inventory;
+    vector<Item> inventory;
     int kills;
     int spared;
     int victories;
@@ -17,14 +18,14 @@ private:
     int totalHealingDone;
 
 public:
-    Player(std::string name, int maxHp, int attack, int defense);
+    Player(string name, int maxHp, int attack, int defense);
 
     int actCount() const override;
 
-    std::vector<Item>& getInventory();
-    const std::vector<Item>& getInventory() const;
+    vector<Item>& getInventory();
+    const vector<Item>& getInventory() const;
 
-    void setInventory(std::vector<Item> loadedItems);
+    void setInventory(vector<Item> loadedItems);
 
     int getKills() const;
     int getSpared() const;
@@ -34,7 +35,7 @@ public:
     int getTotalDamageTaken() const;
     int getTotalHealingDone() const;
 
-    void setName(const std::string& newName);
+    void setName(const string& newName);
     void setMaxHpAndClamp(int newMaxHp);
     void setCurrentHpClamped(int newHp);
     void setProgress(int newKills, int newSpared, int newVictories);

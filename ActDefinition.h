@@ -1,9 +1,10 @@
 #pragma once
 
 #include <string>
+using namespace std;
 
 struct ActDefinition {
-    std::string id;
-    std::string text;
+    string id;
+    string text;
     int mercyImpact;
 };

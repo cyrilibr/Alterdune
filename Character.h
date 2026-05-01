@@ -1,20 +1,21 @@
 #pragma once
 
 #include <string>
+using namespace std;
 
 class Character {
 protected:
-    std::string name;
+    string name;
     int hp;
     int maxHp;
     int attack;
     int defense;
 
 public:
-    Character(std::string name, int maxHp, int attack, int defense);
+    Character(string name, int maxHp, int attack, int defense);
     virtual ~Character();
 
-    const std::string& getName() const;
+    const string& getName() const;
     int getHp() const;
     int getMaxHp() const;
     int getAttack() const;
