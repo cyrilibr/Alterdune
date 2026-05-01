@@ -5,7 +5,7 @@
 #include "Monster.h"
 using namespace std;
 
-struct BeastiaryEntry {
+struct BestiaryEntry {
     string name;
     MonsterCategory category;
     int maxHp;
