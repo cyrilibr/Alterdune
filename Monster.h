@@ -12,7 +12,7 @@ enum class MonsterCategory { NORMAL, MINIBOSS, BOSS };
 enum class CombatAction { FIGHT = 1, ACT = 2, ITEM = 3, MERCY = 4 };
 
 class Monster : public Character {
-protected:
+private:
     int mercy;
     int mercyGoal;
     vector<string> actIds;
@@ -26,44 +26,41 @@ public:
             vector<string> actIds);
 
     int getMercy() const;
-    int getMercyGoal() const;
-    const vector<string>& getActIds() const;
+    int getObjectifMercy() const;
+    const vector<string>& getActionsAct() const;
 
-    void adjustMercy(int delta);
+    void modifierMercy(int delta);
+    bool peutEtreEpargne() const;
 
-    bool canSpare() const;
-
-    virtual MonsterCategory category() const = 0;
-    virtual string categoryName() const = 0;
-    virtual unique_ptr<Monster> clone() const = 0;
+    virtual int nombreActionsAct() const = 0;
+    virtual MonsterCategory getCategorie() const = 0;
+    virtual string getNomCategorie() const = 0;
+    virtual unique_ptr<Monster> cloner() const = 0;
 };
 
 class NormalMonster : public Monster {
 public:
     using Monster::Monster;
-
-    int actCount() const override;
-    MonsterCategory category() const override;
-    string categoryName() const override;
-    unique_ptr<Monster> clone() const override;
+    int nombreActionsAct() const override;
+    MonsterCategory getCategorie() const override;
+    string getNomCategorie() const override;
+    unique_ptr<Monster> cloner() const override;
 };
 
 class MiniBossMonster : public Monster {
 public:
     using Monster::Monster;
-
-    int actCount() const override;
-    MonsterCategory category() const override;
-    string categoryName() const override;
-    unique_ptr<Monster> clone() const override;
+    int nombreActionsAct() const override;
+    MonsterCategory getCategorie() const override;
+    string getNomCategorie() const override;
+    unique_ptr<Monster> cloner() const override;
 };
 
 class BossMonster : public Monster {
 public:
     using Monster::Monster;
-
-    int actCount() const override;
-    MonsterCategory category() const override;
-    string categoryName() const override;
-    unique_ptr<Monster> clone() const override;
+    int nombreActionsAct() const override;
+    MonsterCategory getCategorie() const override;
+    string getNomCategorie() const override;
+    unique_ptr<Monster> cloner() const override;
 };

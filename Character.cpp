@@ -9,20 +9,32 @@ Character::Character(string name, int maxHp, int attack, int defense)
 
 Character::~Character() = default;
 
-const string& Character::getName() const { return name; }
+const string& Character::getNom() const { return name; }
 int Character::getHp() const { return hp; }
-int Character::getMaxHp() const { return maxHp; }
-int Character::getAttack() const { return attack; }
+int Character::getHpMax() const { return maxHp; }
+int Character::getAttaque() const { return attack; }
 int Character::getDefense() const { return defense; }
 
-bool Character::isAlive() const { return hp > 0; }
+bool Character::estVivant() const { return hp > 0; }
 
-void Character::heal(int amount) {
+void Character::soigner(int amount) {
     if (amount <= 0) return;
     hp = min(maxHp, hp + amount);
 }
 
-void Character::takeDamage(int damage) {
+void Character::recevoirDegats(int damage) {
     if (damage <= 0) return;
     hp = max(0, hp - damage);
+}
+
+void Character::definirNomInterne(const string& newName) { name = newName; }
+
+void Character::definirHpMaxInterne(int newMaxHp) {
+    if (newMaxHp <= 0) return;
+    maxHp = newMaxHp;
+    hp = min(hp, maxHp);
+}
+
+void Character::definirHpActuelsInterne(int newHp) {
+    hp = max(0, min(newHp, maxHp));
 }

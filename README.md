@@ -1,34 +1,96 @@
-# ALTERDUNE - Mini RPG Console C++
+# ALTERDUNE (C++17)
 
-ALTERDUNE est un mini-RPG console orienté objet (C++) avec combats type **FIGHT / ACT / ITEM / MERCY**.
+ALTERDUNE est un mini-RPG console inspiré d'Undertale, conçu pour pratiquer la POO avec une architecture simple et défendable en soutenance.
 
 ## Compilation
-
-Depuis la racine du projet :
-
 ```bash
-g++ -std=c++17 -Wall -Wextra -pedantic main.cpp Game.cpp Character.cpp Player.cpp Monster.cpp -o alterdune
+g++ -std=c++17 *.cpp -o alterdune
 ```
 
-## Lancer le jeu
-
+## Exécution
 ```bash
 ./alterdune
 ```
 
-## Sauvegarder / Charger
+## Fichiers de données
+### items.csv
+Format : `nom;type;valeur;quantite`
+- `type` est limité à `HEAL`.
+- `valeur` = nombre de HP soignés.
+- `quantite` = stock initial.
 
-- Au lancement : choisir **"Charger la sauvegarde"** pour reprendre `savegame.txt`.
-- Dans le menu principal :
-  - **6) Sauvegarder la partie**
-  - **7) Charger une sauvegarde**
-- Si aucune sauvegarde n'existe, le jeu continue normalement en nouvelle partie.
+### monsters.csv
+Format : `categorie;nom;hp;atk;def;mercyGoal;act1;act2;act3;act4`
+- Catégories : `NORMAL`, `MINIBOSS`, `BOSS`.
+- ACT autorisées selon catégorie :
+  - NORMAL = 2
+  - MINIBOSS = 3
+  - BOSS = 4
+- Les identifiants ACT doivent exister dans le catalogue C++.
 
-## Journal de partie
+## Architecture POO (simple)
+- `Character` : base commune (nom, HP, ATK, DEF).
+- `Player` : joueur, inventaire, statistiques.
+- `Monster` (abstraite) : Mercy, ACT, interface polymorphe.
+- `NormalMonster` / `MiniBossMonster` / `BossMonster` : 2/3/4 ACT.
+- `Game` : menu principal et coordination globale.
+- `CsvLoader` : lecture + validation des CSV.
+- `CombatManager` : combat tour par tour.
+- `ActCatalog` : catalogue ACT (texte + impact Mercy).
+- `EntreeBestiaire` : entrée du bestiaire.
 
-Le menu principal contient désormais **"Journal de partie"**.
-Le journal enregistre les événements majeurs (combats, actions, dégâts, items, issues, fin) et est sauvegardé dans `savegame.txt`.
+## Notions POO utilisées
+- Encapsulation
+- Héritage
+- Classe abstraite
+- Polymorphisme
+- Composition
+- Lecture de fichiers
 
-## Exemple de fichier de sauvegarde
+## UML
+![UML ALTERDUNE](uml_alterdune_final.png)
 
-Un exemple est fourni dans `savegame_example.txt`.
+## Tableau de conformité au cahier des charges
+| Exigence | Implémentation | Statut |
+|---|---|---|
+| Chargement obligatoire `items.csv` et `monsters.csv` | `Game::chargerDonnees` + `CsvLoader` | ✅ |
+| Saisie du nom + résumé initial | `main.cpp` + `Game::afficherResumeDepart` | ✅ |
+| Menu principal (5 options) | `Game::run` | ✅ |
+| Bestiaire (nom/catégorie/stats/résultat) | `Game::afficherBestiaire` | ✅ |
+| Stats joueur minimales | `Player::afficherStatistiques` | ✅ |
+| Items hors combat utilisables | `Game::afficherMenuInventaire` + `Player::utiliserItem` | ✅ |
+| Combat FIGHT/ACT/ITEM/MERCY | `CombatManager::runCombat` | ✅ |
+| Dégâts aléatoires avec `<random>` | `CombatManager` | ✅ |
+| Mercy bornée [0, mercyGoal] | `Monster::modifierMercy` | ✅ |
+| ACT catalogue (10 actions, 2 négatives) | `ActCatalog::build` | ✅ |
+| Fin à 10 victoires + 3 fins | `Game::run` + `Game::afficherFin` | ✅ |
+| Erreurs fichiers/lignes CSV | `CsvLoader` | ✅ |
+
+## Tests manuels
+- `items.csv` absent
+- `monsters.csv` absent
+- ligne mal formée dans `items.csv`
+- ligne mal formée dans `monsters.csv`
+- action ACT inconnue
+- Mercy ne dépasse pas `mercyGoal`
+- Mercy ne descend pas sous 0
+- NORMAL = 2 ACT
+- MINIBOSS = 3 ACT
+- BOSS = 4 ACT
+- victoire par FIGHT
+- victoire par MERCY
+- défaite si HP joueur = 0
+- fin génocidaire
+- fin pacifiste
+- fin neutre
+
+## Questions possibles en soutenance (réponses courtes)
+- **Pourquoi `Monster` est abstraite ?** Pour imposer les comportements spécifiques des monstres (catégorie, nombre d'ACT, cloner).
+- **Où voit-on le polymorphisme ?** `Game` manipule des `Monster` via `unique_ptr`, et les classes dérivées redéfinissent `nombreActionsAct`, `getCategorie`, `cloner`.
+- **Pourquoi `cloner()` ?** Pour lancer un combat sur une copie du monstre modèle, sans modifier le pool global.
+- **Pourquoi `unique_ptr` ?** Pour gérer automatiquement la mémoire des monstres sans `delete` manuel.
+- **Pourquoi `CsvLoader` séparé ?** Pour isoler la lecture/validation des fichiers de la logique du jeu.
+- **Pourquoi `CombatManager` séparé ?** Pour garder `Game` lisible et laisser le combat dans une classe dédiée.
+- **Comment fonctionne Mercy ?** Les ACT modifient une jauge bornée entre 0 et `mercyGoal`; MERCY réussit si la jauge atteint l'objectif.
+- **Comment l’inventaire respecte l’encapsulation ?** `getInventaire()` est en lecture seule et l’usage passe par `utiliserItem()`.
+- **Pourquoi les dégâts ne dépendent pas de ATK/DEF ?** C’est un choix imposé par le cahier des charges (tirage aléatoire entre 0 et HP max du défenseur).

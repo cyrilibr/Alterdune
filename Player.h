@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+#include <string>
 #include <vector>
 
 #include "Character.h"
@@ -20,33 +22,32 @@ private:
 public:
     Player(string name, int maxHp, int attack, int defense);
 
-    int actCount() const override;
+    const vector<Item>& getInventaire() const;
+    void definirInventaire(vector<Item> loadedItems);
+    void ajouterItem(const Item& item);
+    bool utiliserItem(size_t index, int& soinEffectue, string& itemName);
+    bool aUnItemUtilisable() const;
 
-    vector<Item>& getInventory();
-    const vector<Item>& getInventory() const;
-
-    void setInventory(vector<Item> loadedItems);
-
-    int getKills() const;
-    int getSpared() const;
-    int getVictories() const;
+    int getMonstresTues() const;
+    int getMonstresEpargnes() const;
+    int getVictoires() const;
     int getTotalCombats() const;
     int getTotalDamageDealt() const;
     int getTotalDamageTaken() const;
     int getTotalHealingDone() const;
 
-    void setName(const string& newName);
-    void setMaxHpAndClamp(int newMaxHp);
-    void setCurrentHpClamped(int newHp);
-    void setProgress(int newKills, int newSpared, int newVictories);
-    void setAdvancedStats(int combats, int dealt, int taken, int healing);
+    void definirNom(const string& newName);
+    void definirHpMax(int newMaxHp);
+    void definirHpActuels(int newHp);
+    void definirProgression(int newKills, int newSpared, int newVictories);
+    void definirStatistiquesAvancees(int combats, int dealt, int taken, int soin);
 
-    void addKill();
-    void addSpared();
-    void addCombat();
-    void addDamageDealt(int value);
-    void addDamageTaken(int value);
-    void addHealingDone(int value);
+    void ajouterMonstreTue();
+    void ajouterMonstreEpargne();
+    void ajouterCombat();
+    void ajouterDegatsInfliges(int value);
+    void ajouterDegatsRecus(int value);
+    void ajouterSoinEffectue(int value);
 
-    void printStats() const;
+    void afficherStatistiques() const;
 };

@@ -4,27 +4,30 @@
 using namespace std;
 
 class Character {
-protected:
+private:
     string name;
     int hp;
     int maxHp;
     int attack;
     int defense;
 
+protected:
+    void definirNomInterne(const string& newName);
+    void definirHpMaxInterne(int newMaxHp);
+    void definirHpActuelsInterne(int newHp);
+
 public:
     Character(string name, int maxHp, int attack, int defense);
     virtual ~Character();
 
-    const string& getName() const;
+    const string& getNom() const;
     int getHp() const;
-    int getMaxHp() const;
-    int getAttack() const;
+    int getHpMax() const;
+    int getAttaque() const;
     int getDefense() const;
 
-    bool isAlive() const;
+    bool estVivant() const;
 
-    void heal(int amount);
-    void takeDamage(int damage);
-
-    virtual int actCount() const = 0;
+    void soigner(int amount);
+    void recevoirDegats(int damage);
 };
