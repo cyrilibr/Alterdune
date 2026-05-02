@@ -733,7 +733,7 @@ Ensuite, le programme compare le nombre de monstres tués et épargnés :
 
 Projet réalisé dans le cadre du cours de Programmation Orientée Objet en C++.
 
-**Étudiant :** Cyril Ibrahim
+**Étudiant :** Cyril Ibrahim / Baptiste Leroy
 **École :** ESILV
 **Année :** 2025-2026
 
