@@ -34,15 +34,23 @@ struct UiTheme {
         cout << paint("  " + text, title) << "\n";
         cout << paint(divider('='), accent) << "\n";
     }
-
     static void printTitleScreen() {
         cout << paint(divider('='), accent) << "\n";
-        cout << paint("      ___    _   _____ _____ ____  ____  _   _ _   _ _____ ", title) << "\n";
-        cout << paint("     / _ \\  | | |_   _| ____|  _ \\|  _ \\| | | | \\| | ____|", title) << "\n";
-        cout << paint("    | | | | | |   | | |  _| | |_) | | | | | | |  \\| |  _|  ", title) << "\n";
-        cout << paint("    | |_| | | |___| | | |___|  _ <| |_| | |_| | |\\  | |___ ", title) << "\n";
-        cout << paint("     \\___/  |_____|_| |_____|_| \\_\\____/ \\___/|_| \\_|_____|", title) << "\n";
-        cout << paint("                Mini-RPG Console Orienté Objet", soft) << "\n";
+    
+        vector<string> logo = {
+            "      _    _   _____ _____ ____  ____  _   _ _   _ _____ ",
+            "     / \\  | | |_   _| ____|  _ \\|  _ \\| | | | \\ | | ____|",
+            "    / _ \\ | |   | | |  _| | |_) | | | | | | |  \\| |  _|  ",
+            "   / ___ \\| |___| | | |___|  _ <| |_| | |_| | |\\  | |___ ",
+            "  /_/   \\_\\_____|_| |_____|_| \\_\\____/ \\___/|_| \\_|_____|"
+        };
+    
+        for (const string& line : logo) {
+            cout << paint(line, title) << "\n";
+        }
+    
+        cout << paint("                         ALTERDUNE", soft) << "\n";
+        cout << paint("                Mini-RPG Console Oriente Objet", soft) << "\n";
         cout << paint(divider('='), accent) << "\n";
     }
 
